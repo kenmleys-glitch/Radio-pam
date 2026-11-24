@@ -3,128 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radyo Pam v2</title>
+    <title>Radyo Pam V3</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0f172a; color: white; margin: 0; padding: 15px; text-align: center; }
-        h1 { color: #22c55e; font-size: 22px; margin-bottom: 5px; }
-        .version { font-size: 11px; color: #94a3b8; margin-bottom: 15px; }
-        .player-box { background-color: #1e293b; padding: 15px; border-radius: 15px; margin-bottom: 15px; position: sticky; top: 10px; z-index: 100; border: 1px solid #334155; }
-        #now-playing { font-weight: bold; color: #22c55e; margin-bottom: 10px; font-size: 15px; }
+        h1 { color: #22c55e; font-size: 24px; margin-bottom: 4px; }
+        .badge { background: #1e293b; color: #38bdf8; font-size: 12px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 15px; }
+        .player { background: #1e293b; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #334155; position: sticky; top: 10px; z-index: 10; }
+        #status { color: #22c55e; font-weight: bold; margin-bottom: 10px; font-size: 16px; }
         audio { width: 100%; height: 40px; }
-        .search-box { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; }
-        input { padding: 12px; width: 65%; border-radius: 25px; border: none; font-size: 15px; outline: none; }
-        button { padding: 12px 18px; border-radius: 25px; border: none; background-color: #22c55e; color: #0f172a; font-weight: bold; cursor: pointer; font-size: 15px; }
-        .filters { margin-bottom: 15px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        .filter-btn { background-color: #334155; color: white; font-size: 13px; padding: 8px 14px; }
-        .station-list { list-style: none; padding: 0; max-width: 600px; margin: 0 auto; text-align: left; }
-        .station-item { background-color: #1e293b; padding: 14px; margin-bottom: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
-        .station-name { font-weight: bold; font-size: 15px; color: #f8fafc; }
-        .station-info { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+        input { width: 90%; max-width: 500px; padding: 12px; border-radius: 25px; border: none; font-size: 15px; margin-bottom: 15px; outline: none; }
+        .card { background: #1e293b; padding: 14px; margin: 0 auto 10px auto; max-width: 550px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; border: 1px solid #334155; }
+        button { background: #22c55e; color: #052e16; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <h1>📻 Radyo Pam</h1>
-    <div class="version">Vèsyon 2.0 • Nouvèl & Mizik</div>
+    <div class="badge">Vèsyon 3.0 • Nouvèl & Mizik</div>
 
-    <div class="player-box">
-        <div id="now-playing">Peze bouton "Koute" sou yon radyo anba a</div>
-        <audio id="audio-player" controls playsinline></audio>
+    <div class="player">
+        <div id="status">Peze "Koute" sou yon radyo anba a</div>
+        <audio id="player" controls playsinline></audio>
     </div>
 
-    <div class="search-box">
-        <input type="text" id="search-input" placeholder="Chèche radyo (ex: Caraibes, Haiti, Kompa)...">
-        <button onclick="searchRadio()">Chèche</button>
-    </div>
+    <input type="text" id="search" onkeyup="filterRadios()" placeholder="🔍 Chèche yon radyo (ex: RFI, Kompa, Caraibes)...">
 
-    <div class="filters">
-        <button class="filter-btn" onclick="loadStations('countrycode=HT')">🇭🇹 Radyo Ayiti</button>
-        <button class="filter-btn" onclick="loadStations('tag=news')">📰 Nouvèl</button>
-        <button class="filter-btn" onclick="loadStations('tag=kompa')">🎶 Kompa</button>
-        <button class="filter-btn" onclick="loadStations('tag=zouk')">💃 Zouk</button>
-    </div>
-
-    <ul class="station-list" id="station-list">
-        <p style="text-align:center; color:#94a3b8;">Ap chaje estasyon radyo yo...</p>
-    </ul>
+    <div id="list"></div>
 
     <script>
-        const stationList = document.getElementById("station-list");
-        const audioPlayer = document.getElementById("audio-player");
-        const nowPlaying = document.getElementById("now-playing");
-
-        // Radyo entènasyonal ak Ayiti ki verifye 100% fonksyonèl
-        const backupStations = [
-            { name: "RFI Afrique (Nouvèl)", country: "Frans / Entènasyonal", url_resolved: "https://infomaniak.ch" },
-            { name: "RFI Monde (Nouvèl)", country: "Frans / Entènasyonal", url_resolved: "https://infomaniak.ch" },
-            { name: "France 24 Français", country: "Frans / Nouvèl", url_resolved: "https://akamaihd.net" },
-            { name: "VOA Afrique (Nouvèl)", country: "Etazini", url_resolved: "https://akamaistream.net" },
-            { name: "Tropiques FM (Kompa & Zouk)", country: "Karayib / Mizik", url_resolved: "https://infomaniak.ch" }
+        const radios = [
+            { name: "RFI Afrique (Nouvèl)", desc: "Nouvèl an dirèk • Entènasyonal", url: "https://infomaniak.ch" },
+            { name: "RFI Monde (Nouvèl)", desc: "Nouvèl entènasyonal", url: "https://infomaniak.ch" },
+            { name: "Tropiques FM", desc: "Kompa, Zouk & Mizik Karayib", url: "https://infomaniak.ch" },
+            { name: "Radio Caraïbes (Zeno)", desc: "Ayiti • Nouvèl & Mizik", url: "https://zeno.fm" },
+            { name: "Radyo Kiskeya (Zeno)", desc: "Ayiti • Nouvèl", url: "https://zeno.fm" },
+            { name: "Radio Mega (Zeno)", desc: "Ayiti • Nouvèl", url: "https://zeno.fm" },
+            { name: "Radio Vision 2000 (Zeno)", desc: "Ayiti • Nouvèl", url: "https://zeno.fm" },
+            { name: "Chokarella Radio", desc: "Ayiti • Mizik & Kilti", url: "https://zeno.fm" },
+            { name: "Generations Rap/RnB", desc: "Mizik Hip-Hop & RnB", url: "https://infomaniak.ch" }
         ];
 
-        function displayStations(stations) {
-            stationList.innerHTML = "";
-            if (!stations || stations.length === 0) {
-                stationList.innerHTML = "<p style='text-align:center;'>Pa gen radyo ki jwenn. Eseye yon lòt mo.</p>";
-                return;
-            }
-            stations.forEach(station => {
-                const streamUrl = station.url_resolved || station.url;
-                if (streamUrl && streamUrl.startsWith("https")) {
-                    const li = document.createElement("li");
-                    li.className = "station-item";
-                    li.innerHTML = `
-                        <div style="padding-right:10px;">
-                            <div class="station-name">${station.name}</div>
-                            <div class="station-info">${station.country || 'Entènasyonal'} ${station.tags ? '• ' + station.tags.split(',')[0] : ''}</div>
-                        </div>
-                        <button style="padding: 8px 14px; font-size: 13px; white-space: nowrap;" onclick="playStation('${station.name.replace(/'/g, "\\'")}', '${streamUrl}')">▶️ Koute</button>
-                    `;
-                    stationList.appendChild(li);
-                }
+        const list = document.getElementById("list");
+        const player = document.getElementById("player");
+        const status = document.getElementById("status");
+
+        function render(items) {
+            list.innerHTML = "";
+            items.forEach(r => {
+                const div = document.createElement("div");
+                div.className = "card";
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight:bold; font-size:16px;">${r.name}</div>
+                        <div style="color:#94a3b8; font-size:12px;">${r.desc}</div>
+                    </div>
+                    <button onclick="play('${r.name}', '${r.url}')">▶️ Koute</button>
+                `;
+                list.appendChild(div);
             });
         }
 
-        function playStation(name, url) {
-            nowPlaying.textContent = "⏳ Ap konekte ak: " + name + "...";
-            audioPlayer.pause();
-            audioPlayer.src = url;
-            audioPlayer.load();
-            
-            const playPromise = audioPlayer.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    nowPlaying.textContent = "🔊 Ap jwe: " + name;
-                }).catch(error => {
-                    nowPlaying.textContent = "⚠️ Radyo sa a pa reponn. Eseye yon lòt nan lis la.";
-                });
-            }
+        function filterRadios() {
+            const q = document.getElementById("search").value.toLowerCase();
+            const filtered = radios.filter(r => r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q));
+            render(filtered);
         }
 
-        async function loadStations(queryParam) {
-            stationList.innerHTML = "<p style='text-align:center; color:#94a3b8;'>Ap chèche estasyon ki an dirèk...</p>";
-            try {
-                const url = `https://radio-browser.info{queryParam}&limit=40&hidebroken=true&order=clickcount&reverse=true`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data && data.length > 0) {
-                    displayStations(data);
-                } else {
-                    displayStations(backupStations);
-                }
-            } catch (err) {
-                displayStations(backupStations);
-            }
+        function play(name, url) {
+            status.textContent = "⏳ Ap konekte ak: " + name + "...";
+            player.src = url;
+            player.play().then(() => {
+                status.textContent = "🔊 Ap jwe: " + name;
+            }).catch(e => {
+                status.textContent = "⚠️ Radyo sa a pa disponib kounye a. Eseye yon lòt.";
+            });
         }
 
-        function searchRadio() {
-            const query = document.getElementById("search-input").value.trim();
-            if (!query) return;
-            loadStations(`name=${encodeURIComponent(query)}`);
-        }
-
-        // Chaje radyo Ayiti yo lè paj la louvri
-        loadStations('countrycode=HT');
+        render(radios);
     </script>
 </body>
 </html>
