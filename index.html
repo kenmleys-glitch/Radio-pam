@@ -3,46 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radyo Pam V3</title>
+    <title>Radyo Pam V5 - Radyo Ayiti</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0f172a; color: white; margin: 0; padding: 15px; text-align: center; }
         h1 { color: #22c55e; font-size: 24px; margin-bottom: 4px; }
         .badge { background: #1e293b; color: #38bdf8; font-size: 12px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 15px; }
         .player { background: #1e293b; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #334155; position: sticky; top: 10px; z-index: 10; }
-        #status { color: #22c55e; font-weight: bold; margin-bottom: 10px; font-size: 16px; }
+        #status { color: #22c55e; font-weight: bold; margin-bottom: 10px; font-size: 15px; }
         audio { width: 100%; height: 40px; }
-        input { width: 90%; max-width: 500px; padding: 12px; border-radius: 25px; border: none; font-size: 15px; margin-bottom: 15px; outline: none; }
-        .card { background: #1e293b; padding: 14px; margin: 0 auto 10px auto; max-width: 550px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; border: 1px solid #334155; }
-        button { background: #22c55e; color: #052e16; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        input { width: 90%; max-width: 500px; padding: 12px; border-radius: 25px; border: none; font-size: 15px; margin-bottom: 12px; outline: none; }
+        .tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .tab-btn { background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: #22c55e; color: #052e16; }
+        .card { background: #1e293b; padding: 14px; margin: 0 auto 10px auto; max-width: 550px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; border: 1px solid #334155; gap: 10px; }
+        .btn-group { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-play { background: #22c55e; color: #052e16; border: none; padding: 10px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .btn-ext { background: #334155; color: #f8fafc; border: none; padding: 10px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <h1>📻 Radyo Pam</h1>
-    <div class="badge">Vèsyon 3.0 • Nouvèl & Mizik</div>
+    <div class="badge">Vèsyon 5.0 • 20+ Radyo Ayiti & Entènasyonal</div>
 
     <div class="player">
-        <div id="status">Peze "Koute" sou yon radyo anba a</div>
-        <audio id="player" controls playsinline></audio>
+        <div id="status">Chwazi yon radyo anba a pou koute</div>
+        <audio id="player" controls playsinline preload="none"></audio>
     </div>
 
-    <input type="text" id="search" onkeyup="filterRadios()" placeholder="🔍 Chèche yon radyo (ex: RFI, Kompa, Caraibes)...">
+    <input type="text" id="search" onkeyup="filterRadios()" placeholder="🔍 Chèche non radyo a (ex: Caraibes, Zenith, Gonaives)...">
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="filterCat('tout', this)">🇭🇹 Tout (24)</button>
+        <button class="tab-btn" onclick="filterCat('nouvel', this)">📰 Nouvèl</button>
+        <button class="tab-btn" onclick="filterCat('mizik', this)">🎶 Kompa / Mizik</button>
+        <button class="tab-btn" onclick="filterCat('levanjil', this)">🙏 Levanjil</button>
+    </div>
 
     <div id="list"></div>
 
     <script>
         const radios = [
-            { name: "RFI Afrique (Nouvèl)", desc: "Nouvèl an dirèk • Entènasyonal", url: "https://infomaniak.ch" },
-            { name: "RFI Monde (Nouvèl)", desc: "Nouvèl entènasyonal", url: "https://infomaniak.ch" },
-            { name: "Tropiques FM", desc: "Kompa, Zouk & Mizik Karayib", url: "https://infomaniak.ch" },
-            { name: "Radio Caraïbes (Zeno)", desc: "Ayiti • Nouvèl & Mizik", url: "https://zeno.fm" },
-            { name: "Radyo Kiskeya (Zeno)", desc: "Ayiti • Nouvèl", url: "https://zeno.fm" },
-            { name: "Radio Mega (Zeno)", desc: "Ayiti • Nouvèl", url: "https://zeno.fm" },
-            { name: "Radio Vision 2000 (Zeno)", desc: "Ayiti • Nouvèl", url: "https://zeno.fm" },
-            { name: "Chokarella Radio", desc: "Ayiti • Mizik & Kilti", url: "https://zeno.fm" },
-            { name: "Generations Rap/RnB", desc: "Mizik Hip-Hop & RnB", url: "https://infomaniak.ch" }
+            // Radyo Ayiti - Nouvèl & Jeneralis
+            { name: "Radio Télé Caraïbes (94.5 FM)", desc: "Pòtoprens • Nouvèl & Mizik", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radyo Kiskeya (88.5 FM)", desc: "Pòtoprens • Nouvèl & Deba", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Mega Haiti (103.7 FM)", desc: "Pòtoprens • Nouvèl & Espò", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Télé Zenith (102.5 FM)", desc: "Pòtoprens • Nouvèl & Politik", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Vision 2000 (99.3 FM)", desc: "Pòtoprens • Nouvèl", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Metropole Haiti (100.1 FM)", desc: "Pòtoprens • Nouvèl", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Scoop FM (107.7 FM)", desc: "Pòtoprens • Nouvèl & Enfòmasyon", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Ibo (98.5 FM)", desc: "Pòtoprens • Nouvèl & Kilti", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Signal FM (90.5 FM)", desc: "Petyonvil • Nouvèl & Mizik", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Télé Ginen (92.9 FM)", desc: "Pòtoprens • Nouvèl & Espò", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Sans Fin (RSF)", desc: "Ayiti • Nouvèl & Sosyete", cat: "nouvel", url: "https://zeno.fm" },
+            { name: "Radio Pacifique (101.5 FM)", desc: "Pòtoprens • Nouvèl & Analiz", cat: "nouvel", url: "https://zeno.fm" },
+
+            // Radyo Ayiti - Kompa & Mizik
+            { name: "Chokarella Radio", desc: "Ayiti • Kompa, Rabòday & Kilti", cat: "mizik", url: "https://zeno.fm" },
+            { name: "Radio Galaxie (104.5 FM)", desc: "Pòtoprens • Kompa & Mizik", cat: "mizik", url: "https://zeno.fm" },
+            { name: "Radio One (90.1 FM)", desc: "Pòtoprens • Mizik & Detant", cat: "mizik", url: "https://zeno.fm" },
+            { name: "Sweet FM (99.7 FM)", desc: "Ayiti • Kompa & Zouk", cat: "mizik", url: "https://zeno.fm" },
+            { name: "Radyo Tipiti", desc: "Ayiti • 100% Kompa & Mizik Kreyòl", cat: "mizik", url: "https://zeno.fm" },
+            { name: "Tropiques FM (MP3 Dirèk)", desc: "Karayib • Kompa & Zouk", cat: "mizik", url: "https://infomaniak.ch" },
+
+            // Radyo Ayiti - Levanjil
+            { name: "Radio Lumière (97.9 FM)", desc: "Ayiti • Levanjil & Nouvèl", cat: "levanjil", url: "https://zeno.fm" },
+            { name: "Radio 4VEH (94.1 FM)", desc: "Okap • Levanjil & Edikasyon", cat: "levanjil", url: "https://zeno.fm" },
+            { name: "Radio Shalom Haiti", desc: "Ayiti • Levanjil & Priyè", cat: "levanjil", url: "https://zeno.fm" },
+
+            // Radyo Entènasyonal (MP3 Dirèk)
+            { name: "RFI Afrique (MP3 Dirèk)", desc: "Nouvèl Entènasyonal", cat: "nouvel", url: "https://infomaniak.ch" },
+            { name: "France Info (MP3 Dirèk)", desc: "Nouvèl 24/24", cat: "nouvel", url: "https://radiofrance.fr" },
+            { name: "Mouv' Hip-Hop/RnB (MP3 Dirèk)", desc: "Mizik Urbain", cat: "mizik", url: "https://radiofrance.fr" }
         ];
 
+        let currentCat = 'tout';
         const list = document.getElementById("list");
         const player = document.getElementById("player");
         const status = document.getElementById("status");
@@ -50,32 +85,49 @@
         function render(items) {
             list.innerHTML = "";
             items.forEach(r => {
+                const isDirectMp3 = r.url.endsWith(".mp3");
                 const div = document.createElement("div");
                 div.className = "card";
                 div.innerHTML = `
                     <div>
-                        <div style="font-weight:bold; font-size:16px;">${r.name}</div>
+                        <div style="font-weight:bold; font-size:15px;">${r.name}</div>
                         <div style="color:#94a3b8; font-size:12px;">${r.desc}</div>
                     </div>
-                    <button onclick="play('${r.name}', '${r.url}')">▶️ Koute</button>
+                    <div class="btn-group">
+                        ${isDirectMp3 ? `<button class="btn-play" onclick="play('${r.name}', '${r.url}')">▶️ Koute</button>` : ''}
+                        <a class="btn-ext" href="${r.url}" target="_blank">🌐 Louvri</a>
+                    </div>
                 `;
                 list.appendChild(div);
             });
         }
 
+        function filterCat(cat, btn) {
+            currentCat = cat;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterRadios();
+        }
+
         function filterRadios() {
             const q = document.getElementById("search").value.toLowerCase();
-            const filtered = radios.filter(r => r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q));
+            const filtered = radios.filter(r => {
+                const matchCat = currentCat === 'tout' || r.cat === currentCat;
+                const matchSearch = r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q);
+                return matchCat && matchSearch;
+            });
             render(filtered);
         }
 
         function play(name, url) {
             status.textContent = "⏳ Ap konekte ak: " + name + "...";
+            player.pause();
             player.src = url;
+            player.load();
             player.play().then(() => {
                 status.textContent = "🔊 Ap jwe: " + name;
             }).catch(e => {
-                status.textContent = "⚠️ Radyo sa a pa disponib kounye a. Eseye yon lòt.";
+                status.textContent = "⚠️ Klike sou bouton 'Louvri' pou koute radyo sa a.";
             });
         }
 
