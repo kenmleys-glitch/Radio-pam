@@ -42,24 +42,40 @@
         <button class="filter-btn" onclick="searchByTag('kompa')">🎶 Kompa / Mizik</button>
     </div>
 
-    <ul class="station-list" id="station-list">
-        <p style="text-align:center; color:#b3b3b3;">Chajman radyo Ayiti yo...</p>
-    </ul>
+    <ul class="station-list" id="station-list"></ul>
 
     <script>
-        const apiBase = "https://radio-browser.info";
+        const servers = [
+            "https://radio-browser.info",
+            "https://radio-browser.info",
+            "https://radio-browser.info"
+        ];
         const stationList = document.getElementById("station-list");
         const audioPlayer = document.getElementById("audio-player");
         const nowPlaying = document.getElementById("now-playing");
 
+        // Radyo Ayiti popilè ki chaje touswit
+        const defaultHaitiStations = [
+            { name: "Radio Télé Caraïbes (94.5 FM)", country: "Ayiti - Nouvèl & Mizik", url_resolved: "https://zeno.fm" },
+            { name: "Radio Mega Haiti (103.7 FM)", country: "Ayiti - Nouvèl", url_resolved: "https://zeno.fm" },
+            { name: "Radyo Kiskeya (88.5 FM)", country: "Ayiti - Nouvèl", url_resolved: "https://zeno.fm" },
+            { name: "Radio Télé Zenith (102.5 FM)", country: "Ayiti - Nouvèl & Deba", url_resolved: "https://zeno.fm" },
+            { name: "Radio Vision 2000 (99.3 FM)", country: "Ayiti - Nouvèl", url_resolved: "https://zeno.fm" },
+            { name: "Radio Metropole Haiti (100.1 FM)", country: "Ayiti - Nouvèl", url_resolved: "https://zeno.fm" },
+            { name: "Radio Scoop FM (107.7 FM)", country: "Ayiti - Nouvèl", url_resolved: "https://zeno.fm" },
+            { name: "Radio Galaxie (104.5 FM)", country: "Ayiti - Kompa & Mizik", url_resolved: "https://zeno.fm" },
+            { name: "Chokarella Radio", country: "Ayiti - Mizik & Kilti", url_resolved: "https://zeno.fm" }
+        ];
+
         function displayStations(stations) {
             stationList.innerHTML = "";
-            if (stations.length === 0) {
+            if (!stations || stations.length === 0) {
                 stationList.innerHTML = "<p style='text-align:center;'>Pa gen radyo ki jwenn pou rechèch sa a.</p>";
                 return;
             }
             stations.forEach(station => {
-                if (station.url_resolved) {
+                const streamUrl = station.url_resolved || station.url;
+                if (streamUrl) {
                     const li = document.createElement("li");
                     li.className = "station-item";
                     li.innerHTML = `
@@ -69,41 +85,68 @@
                         </div>
                         <button style="padding: 8px 15px; font-size: 14px;">▶️ Koute</button>
                     `;
-                    li.onclick = () => playStation(station.name, station.url_resolved);
+                    li.onclick = () => playStation(station.name, streamUrl);
                     stationList.appendChild(li);
                 }
             });
         }
 
         function playStation(name, url) {
-            nowPlaying.textContent = "Ap jwe: " + name;
+            nowPlaying.textContent = "Ap konekte ak: " + name + "...";
             audioPlayer.src = url;
-            audioPlayer.play().catch(err => {
-                nowPlaying.textContent = "Erè: Radyo sa a pa disponib kounye a.";
-            });
+            audioPlayer.play()
+                .then(() => {
+                    nowPlaying.textContent = "🔊 Ap jwe: " + name;
+                })
+                .catch(err => {
+                    nowPlaying.textContent = "⚠️ Radyo sa a pa an dirèk kounye a. Eseye yon lòt.";
+                });
+        }
+
+        async function fetchFromServers(path) {
+            for (let base of servers) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const res = await fetch(`${base}${path}`, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (res.ok) return await res.json();
+                } catch (e) {
+                    continue;
+                }
+            }
+            return null;
         }
 
         async function loadHaiti() {
-            stationList.innerHTML = "<p style='text-align:center;'>Ap chèche radyo Ayiti...</p>";
-            const res = await fetch(`${apiBase}/bycountrycodeexact/HT?limit=30&order=clickcount&reverse=true`);
-            const data = await res.json();
-            displayStations(data);
+            displayStations(defaultHaitiStations);
+            const data = await fetchFromServers(`/bycountrycodeexact/HT?limit=30&order=clickcount&reverse=true`);
+            if (data && data.length > 0) {
+                displayStations([...defaultHaitiStations, ...data]);
+            }
         }
 
         async function searchRadio() {
-            const query = document.getElementById("search-input").value;
+            const query = document.getElementById("search-input").value.trim();
             if (!query) return;
             stationList.innerHTML = "<p style='text-align:center;'>Ap chèche...</p>";
-            const res = await fetch(`${apiBase}/byname/${encodeURIComponent(query)}?limit=30&order=clickcount&reverse=true`);
-            const data = await res.json();
-            displayStations(data);
+            
+            // Chèche nan lis lokal la dabò
+            const localMatches = defaultHaitiStations.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+            const data = await fetchFromServers(`/byname/${encodeURIComponent(query)}?limit=30&order=clickcount&reverse=true`);
+            
+            const results = [...localMatches, ...(data || [])];
+            displayStations(results);
         }
 
         async function searchByTag(tag) {
             stationList.innerHTML = "<p style='text-align:center;'>Ap chèche...</p>";
-            const res = await fetch(`${apiBase}/bytag/${encodeURIComponent(tag)}?limit=30&order=clickcount&reverse=true`);
-            const data = await res.json();
-            displayStations(data);
+            const data = await fetchFromServers(`/bytag/${encodeURIComponent(tag)}?limit=30&order=clickcount&reverse=true`);
+            if (data && data.length > 0) {
+                displayStations(data);
+            } else {
+                stationList.innerHTML = "<p style='text-align:center;'>Pa gen koneksyon ak sèvè a. Klike sou Radyo Ayiti.</p>";
+            }
         }
 
         loadHaiti();
