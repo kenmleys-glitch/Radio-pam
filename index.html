@@ -24,14 +24,14 @@
 <body>
 
     <h1>📻 Radyo Pam</h1>
-    <div class="badge">Vèsyon 5.0 • 20+ Radyo Ayiti & Entènasyonal</div>
+    <div class="badge">Vèsyon 5.0 • 24 Radyo Ayiti & Entènasyonal</div>
 
     <div class="player">
         <div id="status">Chwazi yon radyo anba a pou koute</div>
         <audio id="player" controls playsinline preload="none"></audio>
     </div>
 
-    <input type="text" id="search" onkeyup="filterRadios()" placeholder="🔍 Chèche non radyo a (ex: Caraibes, Zenith, Gonaives)...">
+    <input type="text" id="search" onkeyup="filterRadios()" placeholder="🔍 Chèche non radyo a (ex: Caraibes, Zenith, Lumiere)...">
 
     <div class="tabs">
         <button class="tab-btn active" onclick="filterCat('tout', this)">🇭🇹 Tout (24)</button>
@@ -44,7 +44,6 @@
 
     <script>
         const radios = [
-            // Radyo Ayiti - Nouvèl & Jeneralis
             { name: "Radio Télé Caraïbes (94.5 FM)", desc: "Pòtoprens • Nouvèl & Mizik", cat: "nouvel", url: "https://zeno.fm" },
             { name: "Radyo Kiskeya (88.5 FM)", desc: "Pòtoprens • Nouvèl & Deba", cat: "nouvel", url: "https://zeno.fm" },
             { name: "Radio Mega Haiti (103.7 FM)", desc: "Pòtoprens • Nouvèl & Espò", cat: "nouvel", url: "https://zeno.fm" },
@@ -57,21 +56,15 @@
             { name: "Radio Télé Ginen (92.9 FM)", desc: "Pòtoprens • Nouvèl & Espò", cat: "nouvel", url: "https://zeno.fm" },
             { name: "Radio Sans Fin (RSF)", desc: "Ayiti • Nouvèl & Sosyete", cat: "nouvel", url: "https://zeno.fm" },
             { name: "Radio Pacifique (101.5 FM)", desc: "Pòtoprens • Nouvèl & Analiz", cat: "nouvel", url: "https://zeno.fm" },
-
-            // Radyo Ayiti - Kompa & Mizik
             { name: "Chokarella Radio", desc: "Ayiti • Kompa, Rabòday & Kilti", cat: "mizik", url: "https://zeno.fm" },
             { name: "Radio Galaxie (104.5 FM)", desc: "Pòtoprens • Kompa & Mizik", cat: "mizik", url: "https://zeno.fm" },
             { name: "Radio One (90.1 FM)", desc: "Pòtoprens • Mizik & Detant", cat: "mizik", url: "https://zeno.fm" },
             { name: "Sweet FM (99.7 FM)", desc: "Ayiti • Kompa & Zouk", cat: "mizik", url: "https://zeno.fm" },
             { name: "Radyo Tipiti", desc: "Ayiti • 100% Kompa & Mizik Kreyòl", cat: "mizik", url: "https://zeno.fm" },
             { name: "Tropiques FM (MP3 Dirèk)", desc: "Karayib • Kompa & Zouk", cat: "mizik", url: "https://infomaniak.ch" },
-
-            // Radyo Ayiti - Levanjil
             { name: "Radio Lumière (97.9 FM)", desc: "Ayiti • Levanjil & Nouvèl", cat: "levanjil", url: "https://zeno.fm" },
             { name: "Radio 4VEH (94.1 FM)", desc: "Okap • Levanjil & Edikasyon", cat: "levanjil", url: "https://zeno.fm" },
             { name: "Radio Shalom Haiti", desc: "Ayiti • Levanjil & Priyè", cat: "levanjil", url: "https://zeno.fm" },
-
-            // Radyo Entènasyonal (MP3 Dirèk)
             { name: "RFI Afrique (MP3 Dirèk)", desc: "Nouvèl Entènasyonal", cat: "nouvel", url: "https://infomaniak.ch" },
             { name: "France Info (MP3 Dirèk)", desc: "Nouvèl 24/24", cat: "nouvel", url: "https://radiofrance.fr" },
             { name: "Mouv' Hip-Hop/RnB (MP3 Dirèk)", desc: "Mizik Urbain", cat: "mizik", url: "https://radiofrance.fr" }
